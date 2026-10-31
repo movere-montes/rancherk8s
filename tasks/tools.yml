@@ -1,16 +1,16 @@
-- name: Download kube-config
+- name: Download kube-config [5383a7f]
   ansible.builtin.include_tasks: tools/kubeconfig.yml
   when:
     - "'server_primary' in group_names"
     - rancherk8s_fetch_kubeconfig
 
-- name: Install helm
+- name: Install helm [29ccd48]
   ansible.builtin.include_tasks: tools/helm.yml
 
-- name: Install k9s
+- name: Install k9s [2c6b6f8]
   ansible.builtin.include_tasks: tools/k9s.yml
 
-- name: Install Cilium CLI
+- name: Install Cilium CLI [58c8659]
   when:
     - rancherk8s_type == 'k3s'
     - rancherk8s_cni == 'cilium'

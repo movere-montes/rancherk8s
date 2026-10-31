@@ -1,12 +1,12 @@
 ---
-- name: "Check for age key at {{ rancherk8s_flux_sops_age_key_path }} on the control machine"  # noqa name[template]
+- name: "Check for age key at {{ rancherk8s_flux_sops_age_key_path }} on the control machine [f9cb6b8]"  # noqa name[template]
   ansible.builtin.stat:
     path: "{{ rancherk8s_flux_sops_age_key_path }}"
   register: rancherk8s_flux_sops_age_key_stat
   delegate_to: localhost
   become: false
 
-- name: Require the age key to exist before installing it
+- name: Require the age key to exist before installing it [6a57138]
   ansible.builtin.assert:
     that:
       - rancherk8s_flux_sops_age_key_stat.stat.exists
@@ -15,7 +15,7 @@
       {{ rancherk8s_flux_sops_age_key_path }} does not exist on the control
       machine.
 
-- name: "Ensure namespace {{ rancherk8s_flux_sops_age_key_namespace }} exists"  # noqa name[template]
+- name: "Ensure namespace {{ rancherk8s_flux_sops_age_key_namespace }} exists [6f40d6a]"  # noqa name[template]
   kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
@@ -23,7 +23,7 @@
     state: present
     kubeconfig: '{{ rancherk8s_kubeconfig }}'
 
-- name: "Install age key as {{ rancherk8s_flux_sops_age_key_secret_name }} Secret"  # noqa name[template]
+- name: "Install age key as {{ rancherk8s_flux_sops_age_key_secret_name }} Secret [fa4929b]"  # noqa name[template]
   kubernetes.core.k8s:
     state: present
     kubeconfig: '{{ rancherk8s_kubeconfig }}'

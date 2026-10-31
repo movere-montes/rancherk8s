@@ -1,29 +1,29 @@
 ---
 # rancherk8s_active_node: real target node - inventory_hostname stays on the driver when delegated.
-- name: Resolve the node actually being acted on
+- name: Resolve the node actually being acted on [79b905f]
   ansible.builtin.set_fact:
     rancherk8s_active_node: "{{ rancherk8s_upgrade_target | default(inventory_hostname) }}"
 
-- name: 'Download install.sh from {{ rancherk8s_type }}.io'  # noqa name[template]
+- name: 'Download install.sh from {{ rancherk8s_type }}.io [6318804]'  # noqa name[template]
   ansible.builtin.get_url:
     url: https://get.{{ rancherk8s_type }}.io/
     dest: "{{ rancherk8s_artifact_path }}/install.sh"
     mode: '0755'
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: 'Render install environment for {{ rancherk8s_type }}'
+- name: 'Render install environment for {{ rancherk8s_type }} [7d5535d]'
   ansible.builtin.template:
     src: install.env.j2
     dest: "{{ rancherk8s_artifact_path }}/install.env"
     mode: '0600'
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: 'Run installer for {{ rancherk8s_type }}' # noqa command-instead-of-shell no-changed-when
+- name: 'Run installer for {{ rancherk8s_type }} [dac9c4c]' # noqa command-instead-of-shell no-changed-when
   ansible.builtin.shell:
     cmd: "set -a && . {{ rancherk8s_artifact_path }}/install.env && set +a && {{ rancherk8s_artifact_path }}/install.sh"
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: 'Set config-file for {{ rancherk8s_type }}'
+- name: 'Set config-file for {{ rancherk8s_type }} [8d211f5]'
   ansible.builtin.template:
     src: config.yml.j2
     dest: '/etc/rancher/{{ rancherk8s_type }}/config.yaml'
@@ -31,7 +31,7 @@
   no_log: true  # contains the join token and, optionally, S3 backup credentials
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: 'Start and enable service on primary node only for {{ rancherk8s_type }}'
+- name: 'Start and enable service on primary node only for {{ rancherk8s_type }} [2b3d8e4]'
   ansible.builtin.service:
     name: "{{ rancherk8s_service_name }}"
     enabled: true
@@ -44,7 +44,7 @@
          else rancherk8s_type + '-' + hostvars[rancherk8s_active_node].rancherk8s_node_type }}
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: Wait for node-token to exist after first start
+- name: Wait for node-token to exist after first start [c186fe4]
   # Fresh bootstrap: pre_flight/tokens.yml ran before this server existed, so
   # rancherk8s_token was never cached - agents need it from this host's facts.
   ansible.builtin.wait_for:
@@ -54,7 +54,7 @@
     - rancherk8s_active_node in groups['server_primary']
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: Read node-token so agents can join without a separate pre-flight pass
+- name: Read node-token so agents can join without a separate pre-flight pass [b4ffac1]
   ansible.builtin.slurp:
     src: '{{ rancherk8s_node_token }}'
   register: node_token
@@ -62,13 +62,13 @@
     - rancherk8s_active_node in groups['server_primary']
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: Cache the join token for this run
+- name: Cache the join token for this run [dc3fa01]
   ansible.builtin.set_fact:
     rancherk8s_token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
   when:
     - rancherk8s_active_node in groups['server_primary']
 
-- name: Wait for kubernetes API to become available on server
+- name: Wait for kubernetes API to become available on server [72cfee4]
   ansible.builtin.wait_for:
     port: 6443
     timeout: 600
@@ -78,13 +78,13 @@
     - rancherk8s_active_node in groups['server_primary']
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: "Can't connect to rke2-api end play"
+- name: "Can't connect to rke2-api end play [4c23a12]"
   ansible.builtin.meta: end_play
   when:
     - rancherk8s_active_node in groups['server_primary']
     - rancherk8s_api_check.failed
 
-- name: Wait for kubernetes API to become ready
+- name: Wait for kubernetes API to become ready [4fe14a3]
   ansible.builtin.uri:
     url: https://127.0.0.1:6443/readyz
     validate_certs: false
@@ -99,23 +99,23 @@
     - rancherk8s_active_node in groups['server_primary']
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: Set node-token path
+- name: Set node-token path [0a5cd37]
   when: rancherk8s_type == 'rke2'
   ansible.builtin.set_fact:
     rancherk8s_node_token: "/var/lib/rancher/{{ rancherk8s_type }}/server/node-token"
 
-- name: Set node-token path
+- name: Set node-token path [a03346d]
   when: rancherk8s_type == 'k3s'
   ansible.builtin.set_fact:
     rancherk8s_node_token: "/var/lib/rancher/{{ rancherk8s_type }}/server/agent-token"
 
-- name: Wait for node-token
+- name: Wait for node-token [99364ca]
   ansible.builtin.wait_for:
     path: '{{ rancherk8s_node_token }}'
     timeout: 30
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: Read and register node-token from first server
+- name: Read and register node-token from first server [2b7dd19]
   ansible.builtin.slurp:
     src: '{{ rancherk8s_node_token }}'
   register: node_token

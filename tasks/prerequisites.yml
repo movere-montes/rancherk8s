@@ -1,18 +1,18 @@
 ---
-- name: Install dependencies
+- name: Install dependencies [1f845a9]
   ansible.builtin.package:
     name:
       - tar
       - python3-pip
     state: present
 
-- name: Install Python venv support
+- name: Install Python venv support [5d89db4]
   ansible.builtin.package:
     name: python3-venv
     state: present
   when: ansible_facts['os_family'] == 'Debian'
 
-- name: Install Python packages for kubernetes.core into a dedicated venv  # noqa package-latest
+- name: Install Python packages for kubernetes.core into a dedicated venv [b19864f]  # noqa package-latest
   ansible.builtin.pip:
     name: "{{ item }}"
     state: latest
@@ -23,11 +23,11 @@
     - kubernetes
     - oauthlib
 
-- name: Use the dedicated venv's interpreter for subsequent tasks on this host
+- name: Use the dedicated venv's interpreter for subsequent tasks on this host [a3221ac]
   ansible.builtin.set_fact:
     ansible_python_interpreter: "{{ rancherk8s_venv_path }}/bin/python3"
 
-- name: Add /usr/local/bin to sudo secure_path
+- name: Add /usr/local/bin to sudo secure_path [7f4121a]
   ansible.builtin.lineinfile:
     line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin'
     regexp: "Defaults(\\s)*secure_path(\\s)*="
@@ -36,7 +36,7 @@
     path: /etc/sudoers
     validate: 'visudo -cf %s'
 
-- name: Disable firewalld  # noqa no-handler
+- name: Disable firewalld [259e4c2]  # noqa no-handler
   when:
     - rancherk8s_manage_firewalld
     - "'firewalld.service' in ansible_facts.services"
@@ -45,44 +45,44 @@
     state: stopped
     enabled: false
 
-- name: Disable ufw
+- name: Disable ufw [ab5977a]
   when:
     - rancherk8s_manage_firewalld
     - ansible_facts['os_family'] == 'Debian'
   community.general.ufw:
     state: disabled
 
-- name: Check if NetworkManager is used
+- name: Check if NetworkManager is used [5d845b6]
   ansible.builtin.command: nmcli -t -f RUNNING general
   register: nmcli_output
   ignore_errors: true
   changed_when: false
 
-- name: "Configure NetworkManager so that it ignores CNI's"
+- name: "Configure NetworkManager so that it ignores CNI's [dc06b07]"
   when:
     - nmcli_output.stdout == 'running'
     - rancherk8s_type == 'rke2'
   block:
-    - name: Ensure /etc/NetworkManager/conf.d directory exists
+    - name: Ensure /etc/NetworkManager/conf.d directory exists [1a49471]
       ansible.builtin.file:
         path: /etc/NetworkManager/conf.d
         state: directory
         mode: '0755'
 
-    - name: Copy configuration
+    - name: Copy configuration [a66951a]
       ansible.builtin.copy:
         src: rke2-canal.conf
         dest: /etc/NetworkManager/conf.d/00-rke2-canal.conf
         mode: '0644'
       register: rancherk8s_networkmanager_cni
 
-    - name: Reload NetworkManager  # noqa no-handler
+    - name: Reload NetworkManager [8caab7f]  # noqa no-handler
       ansible.builtin.systemd:
         name: NetworkManager
         state: reloaded
       when: rancherk8s_networkmanager_cni.changed
 
-    - name: Disable nm-cloud services
+    - name: Disable nm-cloud services [0ec525e]
       ansible.builtin.systemd:
         name: "{{ item }}"
         state: stopped

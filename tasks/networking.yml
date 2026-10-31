@@ -1,10 +1,10 @@
-- name: Install networking defaults
+- name: Install networking defaults [44f56fc]
   ansible.builtin.include_tasks: networking/cni-default.yml
 
-- name: Restart k8s
+- name: Restart k8s [51e81e1]
   ansible.builtin.meta: flush_handlers
 
-- name: Install Cilium
+- name: Install Cilium [a4bd4bf]
   when:
     - "'server_primary' in group_names"
     - rancherk8s_type == 'k3s'

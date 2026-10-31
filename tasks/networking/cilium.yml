@@ -1,25 +1,25 @@
-- name: Check if Cilium CLI is already installed
+- name: Check if Cilium CLI is already installed [cc67a10]
   ansible.builtin.command: cilium version --client
   register: current_cilium_version
   failed_when: false
   changed_when: false
 
-- name: Get latest Cilium CLI version
+- name: Get latest Cilium CLI version [76b65dd]
   ansible.builtin.uri:
     url: https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt
     return_content: true
   register: rancherk8s_cilium_cli_version
 
-- name: Auto upgrade Cilium
+- name: Auto upgrade Cilium [4f1fabd]
   when: rancherk8s_cni_cilium_autoupgrade
   block:
-    - name: Autoupdate - Get latest Cilium version
+    - name: Autoupdate - Get latest Cilium version [36267f8]
       ansible.builtin.uri:
         url: https://raw.githubusercontent.com/cilium/cilium/main/stable.txt
         return_content: true
       register: rancherk8s_cilium_version
 
-    - name: Autoupdate - Determine if installation/upgrade is needed
+    - name: Autoupdate - Determine if installation/upgrade is needed [2918185]
       ansible.builtin.set_fact:
         needs_install: "{{ not cilium_installed or (current_version != cilium_version) }}"
       vars:
@@ -27,22 +27,22 @@
         cilium_installed: "{{ current_cilium_version.rc == 0 }}"
         current_version: "{{ (current_cilium_version.stdout | regex_findall('cilium image (stable): (v?[0-9.]+)') | first) | default('') }}"
 
-    - name: Autoupdate - Set news version
+    - name: Autoupdate - Set news version [cf86323]
       ansible.builtin.set_fact:
         rancherk8s_version_cni_cilium: "{{ rancherk8s_cilium_version.content | trim | regex_replace('^v', '') }}"
 
 # Helm is required here but tools.yml only runs after networking.yml
-- name: Ensure helm is installed
+- name: Ensure helm is installed [a2d00e6]
   ansible.builtin.include_tasks: tools/helm.yml
 
-- name: "Install Cilium helm chart {{ rancherk8s_version_cni_cilium }}"
+- name: "Install Cilium helm chart {{ rancherk8s_version_cni_cilium }} [d3a9cec]"
   block:
-    - name: Add cilium chart repo
+    - name: Add cilium chart repo [279889b]
       kubernetes.core.helm_repository:
         name: cilium
         repo_url: "https://helm.cilium.io"
 
-    - name: Install cilium using Helm
+    - name: Install cilium using Helm [e6c9452]
       kubernetes.core.helm:
         name: cilium
         chart_ref: cilium/cilium

@@ -1,30 +1,30 @@
 ---
-- name: Resolve the node's hostname and local kubeconfig path
+- name: Resolve the node's hostname and local kubeconfig path [11016bf]
   ansible.builtin.set_fact:
     rancherk8s_upgrade_node_name: "{{ hostvars[rancherk8s_upgrade_target].ansible_facts.hostname }}"
     rancherk8s_upgrade_local_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/{{ rancherk8s_kubeconfig_name }}.yml"
 
-- name: 'Resolve the service name to restart: "k3s" for a k3s server, else "<type>-<node_type>"'
+- name: 'Resolve the service name to restart: "k3s" for a k3s server, else "<type>-<node_type>" [6bc9b98]'
   ansible.builtin.set_fact:
     rancherk8s_service_name: >-
       {{ 'k3s' if rancherk8s_type == 'k3s' and hostvars[rancherk8s_upgrade_target].rancherk8s_node_type == 'server'
          else rancherk8s_type + '-' + hostvars[rancherk8s_upgrade_target].rancherk8s_node_type }}
 
-- name: "Install the server upgrade on {{ rancherk8s_upgrade_node_name }}"
+- name: "Install the server upgrade on {{ rancherk8s_upgrade_node_name }} [a59705a]"
   ansible.builtin.include_tasks: install/server.yml
   when: hostvars[rancherk8s_upgrade_target].rancherk8s_node_type == 'server'
 
-- name: "Install the agent upgrade on {{ rancherk8s_upgrade_node_name }}"
+- name: "Install the agent upgrade on {{ rancherk8s_upgrade_node_name }} [dc93c74]"
   ansible.builtin.include_tasks: install/agent.yml
   when: hostvars[rancherk8s_upgrade_target].rancherk8s_node_type != 'server'
 
-- name: Restart the service to apply the upgrade
+- name: Restart the service to apply the upgrade [3b1790a]
   ansible.builtin.service:
     name: "{{ rancherk8s_service_name }}"
     state: restarted
   delegate_to: "{{ rancherk8s_upgrade_target }}"
 
-- name: "Wait for Ready: {{ rancherk8s_upgrade_node_name }}"
+- name: "Wait for Ready: {{ rancherk8s_upgrade_node_name }} [8d1a3fd]"
   kubernetes.core.k8s_info:
     api_version: v1
     kind: Node
@@ -40,7 +40,7 @@
   delay: 5
   delegate_to: localhost
 
-- name: "Pause to let pods settle before the next node: {{ rancherk8s_upgrade_node_name }}"
+- name: "Pause to let pods settle before the next node: {{ rancherk8s_upgrade_node_name }} [0d7aacc]"
   ansible.builtin.pause:
     seconds: "{{ rancherk8s_upgrade_pause_seconds }}"
   when: rancherk8s_upgrade_pause_seconds | int > 0

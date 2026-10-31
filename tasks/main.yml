@@ -1,48 +1,48 @@
 ---
-- name: Pre-flight
+- name: Pre-flight [99e106b]
   ansible.builtin.include_tasks: pre_flight.yml
 
-- name: Install prerequisites
+- name: Install prerequisites [c2a262b]
   ansible.builtin.include_tasks: prerequisites.yml
 
-- name: 'Configure config-file for {{ rancherk8s_type }}'
+- name: 'Configure config-file for {{ rancherk8s_type }} [3f6a3af]'
   ansible.builtin.include_tasks: configure.yml
   when:
     - "'server_primary' in group_names"
 
-- name: "Install version: {{ rancherk8s_version }}"
+- name: "Install version: {{ rancherk8s_version }} [e822205]"
   ansible.builtin.include_tasks: install.yml
   when:
     - rancherk8s_bin.stat.exists is false
 
-- name: Configure CNI, ServiceAccount and tooling
+- name: Configure CNI, ServiceAccount and tooling [1294d34]
   when: "'server_primary' in group_names"
   block:
-    - name: Install Networking
+    - name: Install Networking [e1d9745]
       ansible.builtin.include_tasks: networking.yml
 
-    - name: "Setup service account sa-{{ rancherk8s_service_account }}"
+    - name: "Setup service account sa-{{ rancherk8s_service_account }} [310ff7b]"
       ansible.builtin.include_tasks: service-account.yml
 
-    - name: Install tooling for maintaining the clusters
+    - name: Install tooling for maintaining the clusters [00a9eed]
       ansible.builtin.include_tasks: tools.yml
       when:
         - rancherk8s_install_tools
 
-- name: Install fluxcd for managing cluster
+- name: Install fluxcd for managing cluster [68e4b07]
   ansible.builtin.include_tasks: tools/fluxcd.yml
   when:
     - "'server_primary' in group_names"
 
-- name: Setup initial labels
+- name: Setup initial labels [63b5e34]
   ansible.builtin.include_tasks: labels.yml
   when: labels is defined
 
-- name: Setup initial taints
+- name: Setup initial taints [bf5720f]
   ansible.builtin.include_tasks: taints.yml
   when: taints is defined
 
-- name: Upgrade servers one at a time
+- name: Upgrade servers one at a time [686e8ca]
   # throttle silently doesn't serialize block+include_tasks - loop from primary instead.
   ansible.builtin.include_tasks: upgrade/node.yml
   loop: "{{ groups['server'] }}"
@@ -53,7 +53,7 @@
     - hostvars[rancherk8s_upgrade_target].rancherk8s_version_defined is version(hostvars[rancherk8s_upgrade_target].rancherk8s_version_installed, '>')
     - hostvars[rancherk8s_upgrade_target].rancherk8s_allow_upgrade
 
-- name: Upgrade agents one at a time
+- name: Upgrade agents one at a time [31e0ae9]
   ansible.builtin.include_tasks: upgrade/node.yml
   loop: "{{ groups['agent'] | default([]) }}"
   loop_control:
@@ -63,14 +63,14 @@
     - hostvars[rancherk8s_upgrade_target].rancherk8s_version_defined is version(hostvars[rancherk8s_upgrade_target].rancherk8s_version_installed, '>')
     - hostvars[rancherk8s_upgrade_target].rancherk8s_allow_upgrade
 
-- name: Reconcile config on secondary servers one at a time
+- name: Reconcile config on secondary servers one at a time [97cda58]
   ansible.builtin.include_tasks: configure_secondary.yml
   loop: "{{ groups['server_secondary'] | default([]) }}"
   loop_control:
     loop_var: rancherk8s_configure_target
   when: inventory_hostname == groups['server_primary'][0]
 
-- name: "Show API token"  # noqa no-handler
+- name: "Show API token [8fbe59a]"  # noqa no-handler
   when:
     - "'server_primary' in group_names"
     - rancherk8s_sa.changed

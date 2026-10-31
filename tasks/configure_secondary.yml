@@ -2,14 +2,14 @@
 # Driven from server_primary, one secondary server at a time - never run this
 # in parallel across secondaries, it would risk restarting multiple etcd
 # members at once. rancherk8s_configure_target: the secondary being reconciled.
-- name: 'Create /etc/rancher/{{ rancherk8s_type }}'
+- name: 'Create /etc/rancher/{{ rancherk8s_type }} [f851b6a]'
   ansible.builtin.file:
     state: directory
     path: '/etc/rancher/{{ rancherk8s_type }}'
     mode: '0755'
   delegate_to: "{{ rancherk8s_configure_target }}"
 
-- name: 'Reconcile config-file for {{ rancherk8s_type }}'
+- name: 'Reconcile config-file for {{ rancherk8s_type }} [5bcf291]'
   # rancherk8s_active_node drives config.yml.j2's server_primary-vs-secondary
   # branches (cluster-init vs. server/token) - must be the actual target, not
   # inventory_hostname (which stays server_primary throughout this loop).
@@ -23,13 +23,13 @@
     rancherk8s_active_node: "{{ rancherk8s_configure_target }}"
   delegate_to: "{{ rancherk8s_configure_target }}"
 
-- name: "Restart and wait for API after a config change: {{ rancherk8s_configure_target }}"
+- name: "Restart and wait for API after a config change: {{ rancherk8s_configure_target }} [5d64800]"
   # Not a handler: delegate_to inside a block doesn't serialize across the
   # loop's targets the way a plain task does - see the "throttle silently
   # doesn't serialize" note on the loop in main.yml.
   when: rancherk8s_configure_result.changed  # noqa no-handler
   block:
-    - name: "Restart the service: {{ rancherk8s_configure_service_name }}"
+    - name: "Restart the service: {{ rancherk8s_configure_service_name }} [fb748b7]"
       ansible.builtin.service:
         name: "{{ rancherk8s_configure_service_name }}"
         state: restarted
@@ -39,7 +39,7 @@
              else rancherk8s_type + '-' + hostvars[rancherk8s_configure_target].rancherk8s_node_type }}
       delegate_to: "{{ rancherk8s_configure_target }}"
 
-    - name: "Wait for kubernetes API to become ready on {{ rancherk8s_configure_target }}"
+    - name: "Wait for kubernetes API to become ready on {{ rancherk8s_configure_target }} [037fb86]"
       ansible.builtin.uri:
         url: https://127.0.0.1:6443/readyz
         validate_certs: false
@@ -52,7 +52,7 @@
       delay: 5
       delegate_to: "{{ rancherk8s_configure_target }}"
 
-    - name: "Pause to let pods settle before the next secondary server: {{ rancherk8s_configure_target }}"
+    - name: "Pause to let pods settle before the next secondary server: {{ rancherk8s_configure_target }} [48a11c0]"
       ansible.builtin.pause:
         seconds: "{{ rancherk8s_upgrade_pause_seconds }}"
       when: rancherk8s_upgrade_pause_seconds | int > 0

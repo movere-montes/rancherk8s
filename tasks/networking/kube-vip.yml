@@ -1,10 +1,10 @@
 ---
 # server_primary only, right after install, so the VIP is live before joins.
-- name: Set manifests directory fact
+- name: Set manifests directory fact [da20a15]
   ansible.builtin.set_fact:
     rancherk8s_manifests_dir: "/var/lib/rancher/{{ rancherk8s_type }}/server/manifests"
 
-- name: "Create manifests folder for {{ rancherk8s_type }}"
+- name: "Create manifests folder for {{ rancherk8s_type }} [0e1292d]"
   ansible.builtin.file:
     path: "{{ rancherk8s_manifests_dir }}/"
     mode: '0755'
@@ -12,7 +12,7 @@
     group: root
     state: directory
 
-- name: Deploy kube-vip RBAC manifest
+- name: Deploy kube-vip RBAC manifest [69a0abc]
   ansible.builtin.copy:
     src: kube-vip-rbac.yaml
     dest: "{{ rancherk8s_manifests_dir }}/kube-vip-rbac.yaml"
@@ -20,7 +20,7 @@
     owner: root
     group: root
 
-- name: "Deploy kube-vip DaemonSet manifest for {{ rancherk8s_api_endpoint }}"
+- name: "Deploy kube-vip DaemonSet manifest for {{ rancherk8s_api_endpoint }} [e809a52]"
   ansible.builtin.template:
     src: kube-vip-daemonset.yaml.j2
     dest: "{{ rancherk8s_manifests_dir }}/kube-vip.yaml"
