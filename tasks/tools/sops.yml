@@ -6,7 +6,7 @@
   delegate_to: localhost
   become: false
 
-- name: Require the age key to exist before installing it [6a57138]
+- name: Require the age key to exist before installing it
   ansible.builtin.assert:
     that:
       - rancherk8s_flux_sops_age_key_stat.stat.exists

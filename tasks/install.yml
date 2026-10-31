@@ -1,5 +1,5 @@
 ---
-- name: Append kubectl binary dir to global PATH [4869d29]
+- name: Append kubectl binary dir to global PATH
   ansible.builtin.lineinfile:
     path: /etc/profile.d/k8s_exports.sh
     line: "{{ item }}"
@@ -24,13 +24,13 @@
 
 # Must run before secondary servers join below: they join through
 # rancherk8s_api_endpoint, so the VIP has to already be answering.
-- name: Deploy kube-vip for the control-plane API endpoint [9c87582]
+- name: Deploy kube-vip for the control-plane API endpoint
   ansible.builtin.include_tasks: networking/kube-vip.yml
   when:
     - "'server_primary' in group_names"
     - rancherk8s_api_vip_enabled
 
-- name: Wait for the kube-vip control-plane endpoint to become reachable [5eba416]
+- name: Wait for the kube-vip control-plane endpoint to become reachable
   ansible.builtin.wait_for:
     host: "{{ rancherk8s_api_endpoint }}"
     port: 6443
@@ -44,14 +44,14 @@
   when:
     - "'agent' in group_names"
 
-- name: Store node-token [5163678]
+- name: Store node-token
   # Only the primary needs this (to drive the secondary-join loop below) - other
   # hosts skip install/server.yml and would race ahead of the primary's own slurp.
   ansible.builtin.set_fact:
     rancherk8s_token: "{{ hostvars[groups['server_primary'][0]]['node_token'].content | b64decode | regex_replace('\n', '') }}"
   when: inventory_hostname == groups['server_primary'][0]
 
-- name: Join secondary servers to the cluster, one at a time [b2f0d94]
+- name: Join secondary servers to the cluster, one at a time
   # throttle silently doesn't serialize block+include_tasks - loop from primary instead.
   ansible.builtin.include_tasks: install/cluster.yml
   loop: "{{ groups['server_secondary'] | default([]) }}"
@@ -59,7 +59,7 @@
     loop_var: rancherk8s_upgrade_target
   when: inventory_hostname == groups['server_primary'][0]
 
-- name: Set RKE2 login-file permissions [84a4acb]
+- name: Set RKE2 login-file permissions
   when: rancherk8s_type == 'rke2'
   ansible.builtin.copy:
     src: "/etc/rancher/rke2/rke2.yaml"

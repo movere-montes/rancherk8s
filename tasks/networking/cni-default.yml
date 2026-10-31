@@ -1,5 +1,5 @@
 ---
-- name: Create manifests folder [e0023ef]
+- name: Create manifests folder
   ansible.builtin.file:
     path: "/var/lib/rancher/{{ rancherk8s_type }}/server/manifests/"
     mode: '0755'
@@ -13,7 +13,7 @@
     path: /var/lib/rancher/{{ rancherk8s_type }}/agent/pod-manifests/kube-proxy.yaml
     state: absent
 
-- name: Loop over defined cilium values [b4bda95]
+- name: Loop over defined cilium values
   ansible.builtin.template:
     src: "cni/{{ item }}.j2"
     dest: "/var/lib/rancher/{{ rancherk8s_type }}/server/manifests/{{ item }}"

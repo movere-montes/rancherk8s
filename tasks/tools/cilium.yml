@@ -1,16 +1,16 @@
-- name: Check if Cilium CLI is already installed [191c7b8]
+- name: Check if Cilium CLI is already installed
   ansible.builtin.command: cilium version --client
   register: current_cilium_version
   failed_when: false
   changed_when: false
 
-- name: Get latest Cilium CLI version [429baf3]
+- name: Get latest Cilium CLI version
   ansible.builtin.uri:
     url: https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt
     return_content: true
   register: rancherk8s_cilium_cli_version
 
-- name: Determine if installation/upgrade is needed [be89bae]
+- name: Determine if installation/upgrade is needed
   ansible.builtin.set_fact:
     needs_install_cli: "{{ not cilium_cli_installed or (current_cli_version != cilium_cli_version) }}"
   vars:
@@ -21,7 +21,7 @@
 - name: "Install Cilium CLI {{ rancherk8s_cilium_cli_version.content | trim }} [a537382]"
   when: needs_install_cli
   block:
-    - name: Download Cilium CLI binary [3c2db26]
+    - name: Download Cilium CLI binary
       ansible.builtin.get_url:
         url: "https://github.com/cilium/cilium-cli/releases/download/{{ cilium_cli_version }}/cilium-linux-amd64.tar.gz"
         dest: "/usr/local/bin/"
@@ -29,7 +29,7 @@
       vars:
         cilium_cli_version: "{{ rancherk8s_cilium_cli_version.content | trim }}"
 
-    - name: Extract Cilium CLI to /usr/local/bin [a5f3dcd]
+    - name: Extract Cilium CLI to /usr/local/bin
       ansible.builtin.unarchive:
         src: "/usr/local/bin/cilium-linux-amd64.tar.gz"
         dest: /usr/local/bin
@@ -38,7 +38,7 @@
         group: root
         mode: '0755'
 
-    - name: Remove cilium installation file [b50d93d]
+    - name: Remove cilium installation file
       ansible.builtin.file:
         path: "/usr/local/bin/cilium-linux-amd64.tar.gz"
         state: absent

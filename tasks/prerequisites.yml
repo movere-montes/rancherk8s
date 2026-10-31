@@ -1,12 +1,12 @@
 ---
-- name: Install dependencies [1f845a9]
+- name: Install dependencies
   ansible.builtin.package:
     name:
       - tar
       - python3-pip
     state: present
 
-- name: Install Python venv support [5d89db4]
+- name: Install Python venv support
   ansible.builtin.package:
     name: python3-venv
     state: present
@@ -23,11 +23,11 @@
     - kubernetes
     - oauthlib
 
-- name: Use the dedicated venv's interpreter for subsequent tasks on this host [a3221ac]
+- name: Use the dedicated venv's interpreter for subsequent tasks on this host
   ansible.builtin.set_fact:
     ansible_python_interpreter: "{{ rancherk8s_venv_path }}/bin/python3"
 
-- name: Add /usr/local/bin to sudo secure_path [7f4121a]
+- name: Add /usr/local/bin to sudo secure_path
   ansible.builtin.lineinfile:
     line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin'
     regexp: "Defaults(\\s)*secure_path(\\s)*="
@@ -45,14 +45,14 @@
     state: stopped
     enabled: false
 
-- name: Disable ufw [ab5977a]
+- name: Disable ufw
   when:
     - rancherk8s_manage_firewalld
     - ansible_facts['os_family'] == 'Debian'
   community.general.ufw:
     state: disabled
 
-- name: Check if NetworkManager is used [5d845b6]
+- name: Check if NetworkManager is used
   ansible.builtin.command: nmcli -t -f RUNNING general
   register: nmcli_output
   ignore_errors: true
@@ -63,13 +63,13 @@
     - nmcli_output.stdout == 'running'
     - rancherk8s_type == 'rke2'
   block:
-    - name: Ensure /etc/NetworkManager/conf.d directory exists [1a49471]
+    - name: Ensure /etc/NetworkManager/conf.d directory exists
       ansible.builtin.file:
         path: /etc/NetworkManager/conf.d
         state: directory
         mode: '0755'
 
-    - name: Copy configuration [a66951a]
+    - name: Copy configuration
       ansible.builtin.copy:
         src: rke2-canal.conf
         dest: /etc/NetworkManager/conf.d/00-rke2-canal.conf
@@ -82,7 +82,7 @@
         state: reloaded
       when: rancherk8s_networkmanager_cni.changed
 
-    - name: Disable nm-cloud services [0ec525e]
+    - name: Disable nm-cloud services
       ansible.builtin.systemd:
         name: "{{ item }}"
         state: stopped

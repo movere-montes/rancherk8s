@@ -1,5 +1,5 @@
 ---
-- name: Determine OS support [7a62065]
+- name: Determine OS support
   ansible.builtin.set_fact:
     rancherk8s_os_supported: "{{ is_rhel or is_ubuntu }}"
   vars:
@@ -7,7 +7,7 @@
     is_rhel: "{{ ansible_facts['os_family'] == 'RedHat' and major >= 9 }}"
     is_ubuntu: "{{ ansible_facts['distribution'] == 'Ubuntu' and major >= 22 }}"
 
-- name: Explain why an unsupported OS ends the play [bc5107c]
+- name: Explain why an unsupported OS ends the play
   ansible.builtin.debug:
     msg: >-
       {{ ansible_facts['distribution'] }}
@@ -15,11 +15,11 @@
       requires RHEL-family 9+ or Ubuntu 22.04+ LTS.
   when: not rancherk8s_os_supported
 
-- name: End the play for hosts with an unsupported OS [f2665a0]
+- name: End the play for hosts with an unsupported OS
   ansible.builtin.meta: end_play
   when: not rancherk8s_os_supported
 
-- name: Warn about SELinux and the rke2 tarball install method [1753976]
+- name: Warn about SELinux and the rke2 tarball install method
   ansible.builtin.debug:
     msg: >-
       SELinux is enforcing: this role always installs rke2 as a plain
@@ -31,10 +31,10 @@
     - ansible_facts['selinux']['status'] | default('') == 'enabled'
     - ansible_facts['selinux']['mode'] | default('') == 'enforcing'
 
-- name: Check minimum CPU and memory [164fa01]
+- name: Check minimum CPU and memory
   ansible.builtin.include_tasks: pre_flight/resources.yml
 
-- name: Gather service facts [2d3602e]
+- name: Gather service facts
   ansible.builtin.service_facts:
 
 - name: 'Check for binary {{ rancherk8s_type }} [2369114]'
@@ -53,14 +53,14 @@
   ansible.builtin.debug:
     msg: "Host {{ inventory_hostname }} is part of group(s): {{ group_names | join(', ') }}"
 
-- name: Create dynamic groups [9d181c9]
+- name: Create dynamic groups
   ansible.builtin.include_tasks: pre_flight/groups.yml
 
-- name: Check existing and defined verisons [631f34b]
+- name: Check existing and defined verisons
   # Must run per-node: secondary/agents need their own upgrade decision too.
   ansible.builtin.include_tasks: pre_flight/versions.yml
 
-- name: Check for existing node-token [fe5ec24]
+- name: Check for existing node-token
   ansible.builtin.include_tasks: pre_flight/tokens.yml
   when:
     - inventory_hostname in groups['server_primary']

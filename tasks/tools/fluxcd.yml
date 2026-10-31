@@ -1,12 +1,12 @@
 ---
-- name: Flux - Fetch release data from GitHub API [e3446d5]
+- name: Flux - Fetch release data from GitHub API
   ansible.builtin.uri:
     url: "https://api.github.com/repos/fluxcd/flux2/releases/latest"
     method: GET
     return_content: true
   register: rancherk8s_tools_flux_latest_version
 
-- name: Check if flux installed [8563063]
+- name: Check if flux installed
   ansible.builtin.stat:
     path: '/usr/local/bin/flux'
   register: rancherk8s_tools_flux_state
@@ -34,12 +34,12 @@
     - (not rancherk8s_tools_flux_state.stat.exists) or
       (rancherk8s_flux_latest_version is version(rancherk8s_flux_gathered_version, '>'))
 
-- name: Flux Check [6c47be2]
+- name: Flux Check
   when:
     - rancherk8s_flux_bootstrap
     - rancherk8s_tools_flux_state.stat.exists
   block:
-    - name: Flux Check [295f450]
+    - name: Flux Check
       ansible.builtin.shell:
         cmd: 'flux check'
         executable: /bin/bash
@@ -49,25 +49,25 @@
       register: rancherk8s_flux_check
       ignore_errors: true
 
-    - name: Set fact rancherk8s_flux_bootstrap to false when already bootstrapped [dc89f78]
+    - name: Set fact rancherk8s_flux_bootstrap to false when already bootstrapped
       ansible.builtin.set_fact:
         rancherk8s_flux_bootstrap: false
       when: rancherk8s_flux_check.stderr_lines is search('all checks passed')
 
-- name: Install SOPS age key for Flux decryption [9e02d3a]
+- name: Install SOPS age key for Flux decryption
   ansible.builtin.include_tasks: tools/sops.yml
   when: rancherk8s_flux_sops_age_key_enabled
 
-- name: Bootstrap fluxcd [6ec1a46]
+- name: Bootstrap fluxcd
   when: rancherk8s_flux_bootstrap
   block:
-    - name: Create bootstrap file [915f0d6]
+    - name: Create bootstrap file
       ansible.builtin.template:
         src: 'fluxcd-bootstrap.sh.j2'
         dest: '/opt/fluxcd-bootstrap.sh'
         mode: '0755'
 
-    - name: Check if cluster is reachable [ce3b0d7]
+    - name: Check if cluster is reachable
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Namespace

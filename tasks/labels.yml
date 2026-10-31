@@ -1,19 +1,19 @@
 ---
-- name: Kubectl get node info and current labels [8ca44be]
+- name: Kubectl get node info and current labels
   ansible.builtin.command: "kubectl get nodes {{ ansible_facts['hostname'] }} -o json"
   register: kubectl_json
   changed_when: false
 
-- name: Create list of current labels and set as fact [f9c6016]
+- name: Create list of current labels and set as fact
   ansible.builtin.set_fact:
     current_labels: "{{ (kubectl_json.stdout | from_json).metadata.labels | list }}"
 
-- name: Set keys from defined labels [207adfd]
+- name: Set keys from defined labels
   ansible.builtin.set_fact:
     defined_labels: "{{ defined_labels | default([]) + [item | regex_replace('=.*', '')] }}"
   loop: "{{ labels }}"
 
-- name: Create list of labels that need to be added [fee8369]
+- name: Create list of labels that need to be added
   ansible.builtin.set_fact:
     unadded_tag: "{{ (defined_labels | difference(current_labels)) | list }}"
 

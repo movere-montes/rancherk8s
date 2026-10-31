@@ -1,8 +1,8 @@
 ---
-- name: Pre-flight [99e106b]
+- name: Pre-flight
   ansible.builtin.include_tasks: pre_flight.yml
 
-- name: Install prerequisites [c2a262b]
+- name: Install prerequisites
   ansible.builtin.include_tasks: prerequisites.yml
 
 - name: 'Configure config-file for {{ rancherk8s_type }} [3f6a3af]'
@@ -15,34 +15,34 @@
   when:
     - rancherk8s_bin.stat.exists is false
 
-- name: Configure CNI, ServiceAccount and tooling [1294d34]
+- name: Configure CNI, ServiceAccount and tooling
   when: "'server_primary' in group_names"
   block:
-    - name: Install Networking [e1d9745]
+    - name: Install Networking
       ansible.builtin.include_tasks: networking.yml
 
     - name: "Setup service account sa-{{ rancherk8s_service_account }} [310ff7b]"
       ansible.builtin.include_tasks: service-account.yml
 
-    - name: Install tooling for maintaining the clusters [00a9eed]
+    - name: Install tooling for maintaining the clusters
       ansible.builtin.include_tasks: tools.yml
       when:
         - rancherk8s_install_tools
 
-- name: Install fluxcd for managing cluster [68e4b07]
+- name: Install fluxcd for managing cluster
   ansible.builtin.include_tasks: tools/fluxcd.yml
   when:
     - "'server_primary' in group_names"
 
-- name: Setup initial labels [63b5e34]
+- name: Setup initial labels
   ansible.builtin.include_tasks: labels.yml
   when: labels is defined
 
-- name: Setup initial taints [bf5720f]
+- name: Setup initial taints
   ansible.builtin.include_tasks: taints.yml
   when: taints is defined
 
-- name: Upgrade servers one at a time [686e8ca]
+- name: Upgrade servers one at a time
   # throttle silently doesn't serialize block+include_tasks - loop from primary instead.
   ansible.builtin.include_tasks: upgrade/node.yml
   loop: "{{ groups['server'] }}"
@@ -53,7 +53,7 @@
     - hostvars[rancherk8s_upgrade_target].rancherk8s_version_defined is version(hostvars[rancherk8s_upgrade_target].rancherk8s_version_installed, '>')
     - hostvars[rancherk8s_upgrade_target].rancherk8s_allow_upgrade
 
-- name: Upgrade agents one at a time [31e0ae9]
+- name: Upgrade agents one at a time
   ansible.builtin.include_tasks: upgrade/node.yml
   loop: "{{ groups['agent'] | default([]) }}"
   loop_control:
@@ -63,7 +63,7 @@
     - hostvars[rancherk8s_upgrade_target].rancherk8s_version_defined is version(hostvars[rancherk8s_upgrade_target].rancherk8s_version_installed, '>')
     - hostvars[rancherk8s_upgrade_target].rancherk8s_allow_upgrade
 
-- name: Reconcile config on secondary servers one at a time [97cda58]
+- name: Reconcile config on secondary servers one at a time
   ansible.builtin.include_tasks: configure_secondary.yml
   loop: "{{ groups['server_secondary'] | default([]) }}"
   loop_control:

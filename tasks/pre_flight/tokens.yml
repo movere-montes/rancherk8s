@@ -1,27 +1,27 @@
 ---
-- name: Set node-token path [c44d100]
+- name: Set node-token path
   when: rancherk8s_type == 'rke2'
   ansible.builtin.set_fact:
     rancherk8s_node_token: "/var/lib/rancher/{{ rancherk8s_type }}/server/node-token"
 
-- name: Set node-token path [260c59b]
+- name: Set node-token path
   when: rancherk8s_type == 'k3s'
   ansible.builtin.set_fact:
     rancherk8s_node_token: "/var/lib/rancher/{{ rancherk8s_type }}/server/agent-token"
 
-- name: Check for existing token [3e6638f]
+- name: Check for existing token
   ansible.builtin.stat:
     path: "{{ rancherk8s_node_token }}"
   register: node_token_stat
 
-- name: Read and register node-token from first server [f174c1e]
+- name: Read and register node-token from first server
   ansible.builtin.slurp:
     src: "{{ rancherk8s_node_token }}"
   register: node_token
   when:
     - node_token_stat.stat.exists
 
-- name: Store node-token [7bda89f]
+- name: Store node-token
   ansible.builtin.set_fact:
     rancherk8s_token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
   when:

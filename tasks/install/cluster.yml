@@ -1,6 +1,6 @@
 ---
 # rancherk8s_active_node: real target node - inventory_hostname stays on the driver when delegated.
-- name: Resolve the node actually being acted on [2c78fc8]
+- name: Resolve the node actually being acted on
   ansible.builtin.set_fact:
     rancherk8s_active_node: "{{ rancherk8s_upgrade_target | default(inventory_hostname) }}"
 
@@ -43,7 +43,7 @@
          else rancherk8s_type + '-' + hostvars[rancherk8s_active_node].rancherk8s_node_type }}
   delegate_to: "{{ rancherk8s_active_node }}"
 
-- name: Wait for kubernetes API to become available on server [fd0f39c]
+- name: Wait for kubernetes API to become available on server
   ansible.builtin.wait_for:
     port: 6443
     timeout: 600
