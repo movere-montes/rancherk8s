@@ -121,7 +121,7 @@ Role Variables
 
 | Variable                    | Required | Default | Description                                                       |
 |-------------------------------|----------|---------|---------------------------------------------------------------------|
-| rancherk8s_manage_apparmor    | no       | true    | Disable the AppArmor LSM service on Debian-family nodes (its default containerd profile can block syscalls some workloads need, e.g. postgres). Disables confinement for the whole node, not just k3s/containerd. Set false to leave AppArmor untouched |
+| rancherk8s_manage_apparmor    | no       | true    | Disable the AppArmor LSM on Debian-family nodes (its default containerd profile can block syscalls some workloads need, e.g. postgres): stops/disables the `apparmor` service and adds `apparmor=0` to `GRUB_CMDLINE_LINUX` (requires a reboot to fully take effect - the role warns but does not reboot for you). Disables confinement for the whole node, not just k3s/containerd. Set false to leave AppArmor untouched |
 
 ### Storage
 

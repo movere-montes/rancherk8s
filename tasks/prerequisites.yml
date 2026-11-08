@@ -68,6 +68,30 @@
     state: stopped
     enabled: false
 
+- name: Add apparmor=0 to the kernel command line
+  when:
+    - rancherk8s_manage_apparmor
+    - ansible_facts['os_family'] == 'Debian'
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^(GRUB_CMDLINE_LINUX="(?:(?!apparmor=0).)*)"$'
+    line: '\1 apparmor=0"'
+    backrefs: true
+  register: rancherk8s_apparmor_grub
+
+- name: Regenerate GRUB config
+  when: rancherk8s_apparmor_grub.changed
+  ansible.builtin.command: update-grub
+  changed_when: true
+
+- name: Warn that a reboot is required to fully disable AppArmor
+  when: rancherk8s_apparmor_grub.changed
+  ansible.builtin.debug:
+    msg: >-
+      GRUB_CMDLINE_LINUX now includes apparmor=0, but the running kernel
+      still has the AppArmor LSM active until this node is rebooted - reboot
+      it when convenient.
+
 - name: Check if NetworkManager is used
   ansible.builtin.command: nmcli -t -f RUNNING general
   register: nmcli_output
