@@ -11,6 +11,7 @@ Table of Contents
   - [Pre-flight resource requirements](#pre-flight-resource-requirements)
   - [High Availability and Scheduling](#high-availability-and-scheduling)
   - [Firewall](#firewall)
+  - [AppArmor](#apparmor)
   - [Storage](#storage)
   - [Networking / CNI](#networking--cni)
   - [Tooling](#tooling)
@@ -115,6 +116,12 @@ Role Variables
 | Variable                    | Required | Default | Description                                                       |
 |-------------------------------|----------|---------|---------------------------------------------------------------------|
 | rancherk8s_manage_firewalld   | no       | true    | Disable firewalld (it conflicts with CNI-managed iptables/eBPF)     |
+
+### AppArmor
+
+| Variable                    | Required | Default | Description                                                       |
+|-------------------------------|----------|---------|---------------------------------------------------------------------|
+| rancherk8s_manage_apparmor    | no       | true    | Disable the AppArmor LSM service on Debian-family nodes (its default containerd profile can block syscalls some workloads need, e.g. postgres). Disables confinement for the whole node, not just k3s/containerd. Set false to leave AppArmor untouched |
 
 ### Storage
 

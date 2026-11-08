@@ -58,6 +58,16 @@
   community.general.ufw:
     state: disabled
 
+- name: Disable AppArmor  # noqa no-handler
+  when:
+    - rancherk8s_manage_apparmor
+    - ansible_facts['os_family'] == 'Debian'
+    - "'apparmor.service' in ansible_facts.services"
+  ansible.builtin.systemd:
+    name: apparmor
+    state: stopped
+    enabled: false
+
 - name: Check if NetworkManager is used
   ansible.builtin.command: nmcli -t -f RUNNING general
   register: nmcli_output
