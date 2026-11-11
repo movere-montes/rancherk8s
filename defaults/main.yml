@@ -20,6 +20,10 @@ rancherk8s_fetch_kubeconfig: true
 # Cluster/context/user name used in the fetched kubeconfig and its filename
 # (~/.kube/<name>.yaml). Empty falls back to the primary server's hostname.
 rancherk8s_cluster_name: ''
+# How the fetched kubeconfig addresses the control-plane when
+# rancherk8s_api_endpoint is empty: 'ip' uses the primary server's IP,
+# 'hostname' uses its inventory hostname (must resolve via DNS, e.g. pihole).
+rancherk8s_kubeconfig_endpoint_type: 'ip'
 
 rancherk8s_version_installed: "{{ rancherk8s_version }}"
 rancherk8s_version_defined: "{{ rancherk8s_version }}"
