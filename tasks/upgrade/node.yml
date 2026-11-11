@@ -2,7 +2,7 @@
 - name: Resolve the node's hostname and local kubeconfig path
   ansible.builtin.set_fact:
     rancherk8s_upgrade_node_name: "{{ hostvars[rancherk8s_upgrade_target].ansible_facts.hostname }}"
-    rancherk8s_upgrade_local_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/{{ rancherk8s_kubeconfig_name }}.yml"
+    rancherk8s_upgrade_local_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/{{ rancherk8s_kubeconfig_name }}.yaml"
 
 - name: 'Resolve the service name to restart: "k3s" for a k3s server, else "<type>-<node_type>" [6bc9b98]'
   ansible.builtin.set_fact:

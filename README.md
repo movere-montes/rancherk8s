@@ -88,7 +88,7 @@ Role Variables
 | rancherk8s_service_account     | no       | admin                              | Name of the service account to create                          |
 | rancherk8s_kubeconfig          | no       | /etc/rancher/\<type>/\<type>.yaml | Path to the local kubeconfig file                              |
 | rancherk8s_fetch_kubeconfig    | no       | true                                | Fetch the primary server's kubeconfig to the control machine   |
-| rancherk8s_cluster_name        | no       | ''                                  | Cluster/context/user name in the fetched kubeconfig and its filename (~/.kube/\<name>.yml). Empty falls back to the primary server's hostname |
+| rancherk8s_cluster_name        | no       | ''                                  | Cluster/context/user name in the fetched kubeconfig and its filename (~/.kube/\<name>.yaml). Empty falls back to the primary server's hostname |
 | rancherk8s_artifact_path       | no       | /tmp/                              | Path for temporary install artifacts                            |
 
 ### Pre-flight resource requirements
@@ -214,7 +214,7 @@ my_cluster:
 ```yaml
 # inventory/group_vars/my_cluster.yml
 rancherk8s_type: 'k3s'
-rancherk8s_cluster_name: 'my-cluster'   # ~/.kube/<name>.yml instead of the primary node's hostname
+rancherk8s_cluster_name: 'my-cluster'   # ~/.kube/<name>.yaml instead of the primary node's hostname
 rancherk8s_api_endpoint: '10.0.0.50'
 rancherk8s_api_vip_enabled: true
 ```
@@ -390,7 +390,7 @@ all:
 ansible-playbook -i inventory playbook.yml -l my_cluster --vault-password-file=~/.vault_pass
 ```
 
-Kubeconfig is fetched to `~/.kube/<rancherk8s_cluster_name or primary node's hostname>.yml`.
+Kubeconfig is fetched to `~/.kube/<rancherk8s_cluster_name or primary node's hostname>.yaml`.
 
 ### Post-Deployment
 Retrieve the admin token for kubectl access:
